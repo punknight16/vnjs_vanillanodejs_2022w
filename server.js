@@ -1,8 +1,16 @@
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
+var util = require('util');
 
-http.createServer(function (request, response) {
+var server = http.createServer().listen(8888, ()=>{
+        console.log('Server running at http://127.0.0.1:8888/');
+});
+ 
+server.on("request", (request, response)=>{
+    //console.log(util.inspect(request));
+    //request.connection shows tcp connection
+    console.log('ip: ', request.connection.remoteAddress);
     console.log('request ', request.url);
 
     var filePath = '.' + request.url;
@@ -49,6 +57,4 @@ http.createServer(function (request, response) {
             response.end(content, 'utf-8');
         }
     });
-
-}).listen(8888);
-console.log('Server running at http://127.0.0.1:8888/');
+})
