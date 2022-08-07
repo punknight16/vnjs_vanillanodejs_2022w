@@ -10,7 +10,7 @@ var server = http.createServer().listen(8888, ()=>{
 server.on("request", (request, response)=>{
     //console.log(util.inspect(request));
     //request.connection shows tcp connection
-    console.log('ip: ', request.connection.remoteAddress);
+    console.log('ip: ', request.socket.remoteAddress);
     console.log('request ', request.url);
 
     var filePath = '.' + request.url;
