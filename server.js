@@ -12,7 +12,7 @@ server.on("request", (request, response)=>{
     //request.connection shows tcp connection
     console.log('ip: ', request.socket.remoteAddress);
     console.log('request ', request.url);
-
+    console.log('headers ', request.headers);
     var filePath = '.' + request.url;
     if (filePath == './') {
         filePath = './index.html';
