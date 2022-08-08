@@ -20,7 +20,7 @@ server.on("request", (request, response)=>{
 
     let filePath = (function getFilePath(url, method){ 
     	let assetPath = './assets/' + url;
-   	if (assetPath == './') {
+   	if (url == '/') {
    	    assetPath = './pages/index.html';
     	} else if (path.extname(assetPath)=="") {
 	    assetPath = loadpathfromfile(routePath, url, method);
