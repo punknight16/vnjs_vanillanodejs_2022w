@@ -1,0 +1,10 @@
+{
+	"get": {
+		"/test": {"assetPath": "./pages/test.html"},
+		"/hello": {"assetPath": "./pages/hello.html"}
+	},
+	"post": {
+		"/test": {"assetPath": "./pages/test.html"},
+		"/hello": {"assetPath": "./pages/hello.html"}
+	}
+}

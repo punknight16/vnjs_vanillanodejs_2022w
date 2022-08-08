@@ -3,6 +3,10 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 
+
+const { routePath } = require('./config');
+const { loadpathfromfile } = require('./scripts/loadpathfromfile');
+
 var server = http.createServer().listen(8888, ()=>{
         console.log('Server running at http://127.0.0.1:8888/');
 });
@@ -13,10 +17,17 @@ server.on("request", (request, response)=>{
     console.log('ip: ', request.headers['x-forwarded-for'] || request.socket.remoteAddress);
     console.log('request ', request.url);
     console.log('headers ', request.headers);
-    var filePath = '.' + request.url;
-    if (filePath == './') {
-        filePath = './index.html';
-    }
+
+    let filePath = (function getFilePath(url, method){ 
+    	let assetPath = './assets/' + url;
+   	if (assetPath == './') {
+   	    assetPath = './pages/index.html';
+    	} else if (path.extname(assetPath)=="") {
+	    assetPath = loadpathfromfile(routePath, url, method);
+	}  
+	return assetPath;
+    })(request.url, request.method);
+
 
     var extname = String(path.extname(filePath)).toLowerCase();
     var mimeTypes = {
