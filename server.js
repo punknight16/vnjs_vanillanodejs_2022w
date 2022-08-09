@@ -2,17 +2,21 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
+var qs = require('querystring');
 var EventEmitter = require('events');
 const analyticsEmitter = new EventEmitter(); 
+const postEmitter = new EventEmitter();
 
 const { routePath, analyticsDir, MaxFileSize } = require('./config');
-const { loadpathfromfile } = require('./scripts/loadpathfromfile');
+const { loadpathfromfile, loadscriptfromfile } = require('./scripts/loadpathfromfile');
 const { startAnalytics, generatePageView } = require('./scripts/analytics');
+
 let currentAnalyticsFile;
 analyticsEmitter.on('start', (analyticsFile)=>{
 	console.log("new Analytics file: ", analyticsFile);
         currentAnalyticsFile = analyticsFile;
 });
+
 
 var server = http.createServer().listen(8888, ()=>{
     console.log('Server running at http://127.0.0.1:8888/');
@@ -29,7 +33,6 @@ server.on("request", (request, response)=>{
     console.log("url: ", request.url);
     console.log("headers: ", request.headers);
     
-console.log("currentAnalyticsFile: ", currentAnalyticsFile);
      (function generateAnalytics(currentAnalyticsFile, ip, url, agent, method){
  	fs.stat(currentAnalyticsFile, (err, stats)=>{
 	    if(stats.size > MaxFileSize){
@@ -43,6 +46,16 @@ console.log("currentAnalyticsFile: ", currentAnalyticsFile);
 	});
     })(currentAnalyticsFile, ip, request.url, request.headers['user-agent'], request.method);
 
+    const parsePostReq = (req, cb)=>{
+	var body = '';
+	req.setEncoding('utf8');
+	req.on('data', function(chunk){body += chunk});
+	req.on('end', function(){
+	    var postData = qs.parse(body);
+	    cb(postData);
+	});
+    }
+
     let filePath = (function getFilePath(url, method){ 
     	let assetPath = './assets' + url;
    	if (url == '/') {
@@ -54,9 +67,17 @@ console.log("currentAnalyticsFile: ", currentAnalyticsFile);
 	}  
 	return assetPath;
     })(request.url, request.method);
-	console.log("filePath: ", filePath);
     
 
+    const executeMiddleware = (req, cb)=>{ 
+	const scriptPath = loadscriptfromfile(routePath, req.url, req.method);
+	parsePostReq(req, (postData)=>{
+	    require(scriptPath)(postData, (dataObj)=>{ 
+		cb(dataObj);
+	    });
+	}); 
+    } 
+		
     var extname = String(path.extname(filePath)).toLowerCase();
     var mimeTypes = {
         '.html': 'text/html',
@@ -92,8 +113,10 @@ console.log("currentAnalyticsFile: ", currentAnalyticsFile);
             }
         }
         else {
-            response.writeHead(200, { 'Content-Type': contentType });
-            response.end(content, 'utf-8');
+	    executeMiddleware(request, (dataObj)=>{
+                response.writeHead(200, { 'Content-Type': contentType });
+                response.end(content, 'utf-8');
+	    });
         }
     });
 })

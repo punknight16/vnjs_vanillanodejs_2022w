@@ -10,4 +10,17 @@ exports.loadpathfromfile = (routePath, url, method)=>{
 		return routes_obj[method.toLowerCase()][url.toLowerCase()].assetPath;
 	}
 }
+
+
+exports.loadscriptfromfile = (routePath, url, method)=>{
+        const routes_str = fs.readFileSync(routePath, "utf8")
+        const routes_obj = JSON.parse(routes_str);
+        if(!routes_obj.hasOwnProperty(method.toLowerCase()) ||
+                !routes_obj[method.toLowerCase()].hasOwnProperty(url.toLowerCase()) ||
+		!routes_obj[method.toLowerCase()][url.toLowerCase()].hasOwnProperty("scriptPath")){
+                return './scripts/no-op.js';
+        } else {
+                return routes_obj[method.toLowerCase()][url.toLowerCase()].scriptPath;
+        }
+}
 	
