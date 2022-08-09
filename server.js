@@ -115,10 +115,12 @@ server.on("request", (request, response)=>{
         else {
 	    executeMiddleware(request, (dataObj)=>{
 		var mustache_tags =  content.match(/{{\s*[\w\.]+\s*}}/g);
-		var dataObj_keys = mustache_tags.map(function(x) { return x.match(/[\w\.]+/)[0]; });
-		mustache_tags.map((el, index)=>{
+		if(mustach_tags.length > 0){
+		    var dataObj_keys = mustache_tags.map(function(x) { return x.match(/[\w\.]+/)[0]; });
+		    mustache_tags.map((el, index)=>{
 			content = content.replace(el, dataObj[dataObj_keys[index]]);
-		});
+		    });
+		}
                 response.writeHead(200, { 'Content-Type': contentType });
                 response.end(content, 'utf-8');
 	    });
