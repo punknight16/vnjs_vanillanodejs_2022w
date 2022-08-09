@@ -99,7 +99,7 @@ server.on("request", (request, response)=>{
 
     var contentType = mimeTypes[extname] || 'application/octet-stream';
 
-    fs.readFile(filePath, function(error, content) {
+    fs.readFile(filePath,'utf8', function(error, content) {
         if (error) {
             if(error.code == 'ENOENT') {
                 fs.readFile('./pages/404.html', function(error, content) {
@@ -114,6 +114,11 @@ server.on("request", (request, response)=>{
         }
         else {
 	    executeMiddleware(request, (dataObj)=>{
+		var mustache_tags =  content.match(/{{\s*[\w\.]+\s*}}/g);
+		var dataObj_keys = mustache_tags.map(function(x) { return x.match(/[\w\.]+/)[0]; });
+		mustache_tags.map((el, index)=>{
+			content = content.replace(el, dataObj[dataObj_keys[index]]);
+		});
                 response.writeHead(200, { 'Content-Type': contentType });
                 response.end(content, 'utf-8');
 	    });
