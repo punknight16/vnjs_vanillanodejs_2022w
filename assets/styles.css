@@ -1,0 +1,52 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+/* set non-semantic elements */
+div, span {}
+
+/* set semantic layout elements */
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: stretch;
+	padding: 2em 6em 6em 6em;
+}
+
+header {
+	text-align: center;
+}
+nav {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: stretch;
+}
+main {
+	margin: 2em 0 2em 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+footer {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+article {
+	max-width: 750px;
+}
+
+h1 {
+	margin: 10px 0 10px 0;
+	font-size: 20px;
+}
+
+p {
+	margin-bottom: 10px;
+}
