@@ -1,5 +1,5 @@
 # Vanilla NodeJS: A simple nodejs server that does not use NPM or Express
-##Part I: Create Server
+## Part I: Create Server
 
 I'm really annoyed that I need to use the express.js framework to get any basic functionality in node.js. I really wish there was a simple tutorial out there that explained how powerful node.js was all on its own. I looked around briefly and found this article, but that was it. The server works out of the box, but there is no routing, no template engine, and no ability to handle POST requests. 
 
@@ -105,7 +105,7 @@ And here is the initial index.html file:
 ```
 You can also create one last html file just titled 1.html with a hello world in it, so all of the links work. 
 
-###Deploying
+### Deploying
 
 Now that the files are made, I test the server on my local machine using “server node.js&” and then curl the server. Then I check the render and links using my local browser. Once it looks good, I’m ready to deploy.
 
@@ -113,7 +113,7 @@ I ssh into my Synology NAS and type “ps -aux” to see what processes I am alr
 
 I also set up a reverse proxy server to point to the process 8888. If you are running on a pi, this is done with nginx. I am using my Synology, which comes with a fancy ui that gives access to a built-in reverse proxy that I configured with some help from a YouTube video. After looking at the processes running in the shell, it seems like it also is an nginx server, but I’m not messing with it outside the ui.
 
-###Refactoring and Maintaining
+### Refactoring and Maintaining
 That was the first deploy, and it should work. Now, let’s refactor a little bit.
 Setup a new git branch called dev with `branch dev` and `git checkout dev` or the simpler command `git checkout -b dev`.
 We will change the structure of the server.js file just a little bit. Replace the http.createServer line with the following code, and delete the .listen and console.log at the end of the file.
@@ -140,7 +140,7 @@ One last, difficulty in Synology is that they kill processes on logout. To get t
 
 One last thing, when you are killing a "nohup" process that was created with sudo, you need to look into all processes and kill the route processes that are running nohup before restarting the server. This is a simple `ps -aux` to find the right process, and `kill -9 <pid>` to kill the process. If you are having trouble finding the process consider using piping with the grep command. Som
 
-##Part II. Routing
+## Part II. Routing
 
 If we look at the next part of the server.js file, it is a very basic router. It takes the request.url string and creates a filePath string.
 ```
@@ -198,9 +198,9 @@ The only other thing that I really want to do before ending this article is clea
         console.log("filePath: ", filePath);
 ``` 
 To make sure everything is working well, create a styles.css file in the assets folder, and update index.html to correctly request the styles.css file. Then open the index.html file in the browser using the http address: http://localhost:8888 or whatever your domain name is.
-##Part III: Testing
+## Part III: Testing
 
-###Unit Testing
+### Unit Testing
 It is good practice to get in the habit of writing code using Test Driven Development. That means before writing code, write out what you want your function to do, then write a unit test to see if your function will return the thing you expect. I do this all the time for c, but javascript programmers are a little more lax. Let's write a very simple unit test for `getAnalytics`. We want to give a function an object of keys that we want to groupBy, and then count the number of objects that meet those parameters.
 
 So our test might look something like this:
@@ -227,7 +227,7 @@ const resultCount = getAnalytics(analyticsData, params);
 That's it. I haven't actually written the getAnalytics code yet, but that is how TDD works. I know exactly what it needs to do.
 
 
-###Integration Testing
+### Integration Testing
 
 At this point you should be very comfortable with curl, but typing “curl http://localhost:3000”, “curl http://localhost:3000/test” and “curl -d ‘test’ http://locahost:3000/“ over and over can get a little tedious. I actually forget to test every route pretty regularly, so it may be helpful to right a shell script to test each route.
 
@@ -257,7 +257,7 @@ curl -I http://localhost:8888/styles.css
 ```
 The curl commands have the -I flag because I am just interested in whether the API works not in getting the actual data. There are really advance testing suites out there. This is vanilla as you are going to get. If your calls break the server.js that is a good thing because you actually found a bug without a user finding that bug.
 
-###A/B Testing
+### A/B Testing
 
 The website may not be perfect at this point, but I feel like it is getting close enough that you can start showing it to people. The idea behind A/B testing is controlling traffic to your website through a formal experimental process. We run a formal experiment to test the impact of whatever feature or experiment we are working on. A formal experiment requires four classes of information: a hypothesis, a control group, an experimental group, and a metric/measurement. So let’s formalize how we will instantiate these four classes of information right now.
 
@@ -288,11 +288,11 @@ It’s taken a while to get here, but now that we have an A/B test in mind, and 
 	•	A way of tracking and recording views of the article.html page
 
 
-##Part 4: Analytics
+## Part 4: Analytics
 
 I’m going to come out and say it. The easiest way to log views and clicks is to use Google Analytics or HotJar or one of the many other analytics tools out there. The second easiest way is to automatically trigger calls to a third party database that logs those clicks and page views. However, the point of this series to do everything “vanilla” (i.e. from scratch).
 
-###Setting up a filesystem
+### Setting up a filesystem
 
 File system storage is a bit more difficult to use than a database because the typical pattern is to load the entire file into memory, edit the file, and then store the edited file in the same place. With something like page views we can’t do that. Multiple people can view the same page at the same time, and having a checkout system just won’t work. Luckily node.js has “streams”, so that shouldn’t be too much of a problem.
 
@@ -333,7 +333,7 @@ exports.startAnalytics = function (dirPath, cb){
 }
 ```
 
-##Event Emitters to avoid callbacks
+## Event Emitters to avoid callbacks
 Generally, analytics are not important to our main render functions, so we can run our analytics, without blocking the rest of the http request event loop. The only necessary step is to continually update the currentAnalyticsFile with the previously mentioned event emitter.
 ```
 var EventEmitter = require('events');
@@ -386,11 +386,11 @@ console.log("currentAnalyticsFile: ", currentAnalyticsFile);
 
 This file should be looking pretty close to what we need for our unit test written earlier.
 
-##Part 5: Handling Post Requests with Middleware
+## Part 5: Handling Post Requests with Middleware
 
 Now all we need to do is write some code to cycle through each of these files and sum or groupBy based on keys that are similar. This could be done in a static page, but I think it makes more sense to analyze the data via a post request, so we need to work on a bodyParser next.Post Requests should be relatively easy because it is just taking data from a user, parsing it, and doing something with it. However, I have debugged body parser before, and I think the JSON.parse method throws an error very easily. This breaks the entire server, so we need to build some very smart validators or not require objects from our data at all to prevent the user from giving us any data that might break the JSON.parse method. To keep things simple, we can use the querystring module that comes native with node.js.
 
-###Body Parser
+### Body Parser
 Ok, so I did this by breaking the logic into three functions. We have our parser, which I am just going to call parsePostReq. Post data is stored in the “req.on(‘data’, …” event, so we need to have callback functions or promises to process this request. I decided to put a wrapper function around the parser.
 ```
     const parsePostReq = (req, cb)=>{
@@ -405,7 +405,7 @@ Ok, so I did this by breaking the logic into three functions. We have our parser
 
 This might not be the most elegant code, but it will handle the request. 
 
-###Routing Post Requests
+### Routing Post Requests
 Next, we need to load a script based on the route. We all ready have this logic written for getting the asset path, so we will use the age old tradition of copypasta:
 
 exports.loadscriptfromfile = (routePath, url, method)=>{
@@ -421,7 +421,7 @@ exports.loadscriptfromfile = (routePath, url, method)=>{
 
 There is definitely a design decision here of whether the function could be better written in a more DRY form, but although the data is stored in the same place, the actual purpose of the functions is quite different. I can see future iterations of these functions being completely different, so for now we will just leave them as two separate functions with much of the same logic.
 
-###Middleware
+### Middleware
 Finally, we need a middleware function that takes the post data and does something with it. I think the best thing to do here is to write another immediately invoking function and wrap it in another callback function.
 
    const executeMiddleware = (req, cb)=>{
@@ -457,7 +457,7 @@ That should handle every route that currently exists in our project. The last th
 
 curl -d 'test' http://localhost:8888/
 
-##Part 6: Template Engine
+## Part 6: Template Engine
 
 The hard stuff is done. Our routes can be updated with scripts that are necessary. We need to build some fancy functions for our postData but the actual leg work that a framework like express.js would do is done. Express.js would allow us to use the post request data to input values into a template, so we still need to add that functionality.There are many template engines out there, but they all work on the same base principle: match an uncommon string of characters, and replace the matched text with another string. Really the entire process could be done with a simple regex. So let’s write it.
 ```
